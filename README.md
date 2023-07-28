@@ -1,70 +1,106 @@
-# Getting Started with Create React App
+# House Marketplace
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### An app that lists housing properties that's either for "rent" or "sale".
 
-## Available Scripts
+## Firebase Rules:
 
-In the project directory, you can run:
+### FIRESTORE RULES
 
-### `npm start`
+```rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Listings
+    match /listings/{listing} {
+    	allow read;
+      allow create: if request.auth != null && request.resource.data.imgUrls.size() < 7;
+    	allow delete: if resource.data.userRef == request.auth.uid;
+      allow update: if resource.data.userRef == request.auth.uid;
+    }
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+    // Users
+    match /users/{user} {
+    	allow read;
+    	allow create;
+    	allow update: if request.auth.uid == user
+    }
+  }
+}
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### STORAGE RULES
 
-### `npm test`
+```rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read;
+      allow write: if
+      request.auth != null &&
+      request.resource.size < 2 * 1024 * 1024 && //2MB
+      request.resource.contentType.matches('image/.*')
+    }
+  }
+}
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Firebase Setup For House Marketplace
 
-### `npm run build`
+1. Create Firebase Project
+2. Create "web" app within firebase to get config values"
+3. Install firebase in your project "npm i firebase
+4. Create a config file in your project
+5. Add authentication for email/password and Google
+6. Create a user from Firebase
+7. Enable Firestore
+8. Add rules for firestore
+9. Enable storage
+10. Add rules for storage
+11. Create 3 composite indexes for advanced querying
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### First
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Collection: Listing
+- Query Scope: Collection
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Field     |            |
+| --------- | ---------- |
+| type      | Ascending  |
+| timestamp | Descending |
 
-### `npm run eject`
+#### Second
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Collection: Listing
+- Query Scope: Collection
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+| Field     |            |
+| --------- | ---------- |
+| userRef   | Ascending  |
+| timestamp | Descending |
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### Third
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- Collection: Listing
+- Query Scope: Collection
 
-## Learn More
+| Field     |            |
+| --------- | ---------- |
+| offer     | Ascending  |
+| timestamp | Descending |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+12. Create dummy listing with sample data
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| Field           | Value                                                                                                                                                                                                                                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name            | Beautiful Stratford Condo                                                                                                                                                                                                                                                                                                         |
+| type            | rent                                                                                                                                                                                                                                                                                                                              |
+| userRef         | ID OF A USER                                                                                                                                                                                                                                                                                                                      |
+| bedrooms        | 2                                                                                                                                                                                                                                                                                                                                 |
+| bathrooms       | 2                                                                                                                                                                                                                                                                                                                                 |
+| parking         | true                                                                                                                                                                                                                                                                                                                              |
+| furnished       | false                                                                                                                                                                                                                                                                                                                             |
+| offer           | true                                                                                                                                                                                                                                                                                                                              |
+| regularPrice    | 2500                                                                                                                                                                                                                                                                                                                              |
+| discountedPrice | 2000                                                                                                                                                                                                                                                                                                                              |
+| location        | 8601 West Peachtree St Stratford, CT 06614                                                                                                                                                                                                                                                                                        |
+| geolocation     | **lat**: 41.205590 **lng**: -73.150530                                                                                                                                                                                                                                                                                            |
+| imgUrls         | ['https://images.unsplash.com/photo-1586105251261-72a756497a11?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1258&q=80', 'https://images.unsplash.com/photo-1554995207-c18c203602cb?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1470&q=80'] |
