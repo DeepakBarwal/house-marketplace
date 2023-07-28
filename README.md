@@ -1,6 +1,10 @@
 # House Marketplace
 
-### An app that lists housing properties that's either for "rent" or "sale".
+### An app that lets it's user list their housing properties for "rent" or "sale" using Opencage geocoding API and Firebase backend.
+
+## Installation
+
+Clone the project and do `npm i`. Add your own env variables - REACT_APP_OPENCAGE_GEOCODING_API_KEY, REACT_APP_FIREBASE_API_KEY
 
 ## Firebase Rules:
 
